@@ -69,6 +69,28 @@ async function run() {
             const booking = req.body;
             const result = await bookingCollection.insertOne(booking);
             res.send(result);
+        });
+        app.get("/bookingP/:email", async (req, res) => {
+            console.log(req.params.email);
+            const result = await bookingCollection.find({ email: req.params.email })
+                .toArray();
+            res.json(result);
+        });
+
+
+        app.patch('booking/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedBooking = await bookingCollection.updateOne(filter, updatedDoc);
+            const result = await paymentCollection.insertOne(payment);
+            res.send(updatedDoc)
         })
     }
     finally {
