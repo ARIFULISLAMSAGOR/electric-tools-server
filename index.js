@@ -42,13 +42,28 @@ async function run() {
             res.send(products);
         });
 
-        app.get('/product/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) }
-            const products = await productCollection.findOne(query);
-            res.send(products);
+        app.get('/booking', verifyJWT, async (req, res) => {
+            const coustomar = req.query.coustomar;
+            const decodedEmail = req.decoded.email;
+            if (coustomar) {
+                const query = { coustomar: coustomar };
+                const bookings = await bookingCollection.find(query).toArray();
+                return res.send(bookings);
+            }
+            else {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
 
         })
+
+        app.get('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const query = { _id: ObjectId(id) };
+            const booking = await bookingCollection.findOne(query);
+            res.send(booking);
+        })
+
 
         app.post('/booking', async (req, res) => {
             const booking = req.body;
