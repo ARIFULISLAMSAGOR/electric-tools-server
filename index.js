@@ -91,7 +91,33 @@ async function run() {
             const updatedBooking = await bookingCollection.updateOne(filter, updatedDoc);
             const result = await paymentCollection.insertOne(payment);
             res.send(updatedDoc)
-        })
+        });
+
+        app.put("/booking/:id", async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    payment: payment,
+                },
+            };
+            const result = await bookingCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        });
+
+
+        app.post("/create-payment-intent", async (req, res) => {
+            const paymentInfo = req.body;
+            const amount = paymentInfo.price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: "usd",
+                amount: amount,
+                payment_method_types: ["card"],
+            });
+            res.json({ clientSecret: paymentIntent.client_secret });
+        });
     }
     finally {
 
