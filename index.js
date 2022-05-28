@@ -134,6 +134,21 @@ async function run() {
             }
         })
 
+        app.post("/reviews", async (req, res) => {
+            const review = req.body;
+            console.log(review);
+            const result = await reviewCollection.insertOne(review);
+            res.json(result);
+        });
+
+        //Get All reviews
+        app.get("/reviews", async (req, res) => {
+            const cursor = reviewCollection.find({});
+            const reviews = await cursor.toArray();
+            res.json(reviews);
+        });
+
+
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
