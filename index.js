@@ -5,6 +5,7 @@ require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 const app = express();
+const stripe = require('stripe')('sk_test_51L4OOwFE4wv54inCqK8DfIw2xxWOeyvFq78u3x2vbKPCH6ZW9mOKQDdrRqOjfDTCHbSqLhuAamcoOFnin5SgVjzp00IbQkyV9I')
 
 //middleware
 app.use(cors());
@@ -34,6 +35,9 @@ async function run() {
         await client.connect()
         const productCollection = client.db('electrictools').collection('product');
         const bookingCollection = client.db('electrictools').collection('booking');
+        const userCollection = client.db("electrictools").collection("users");
+        const reviewCollection = client.db("electrictools").collection("reviews");
+        const paymentCollection = client.db("electrictools").collection("payments");
 
         app.get('/product', async (req, res) => {
             const query = {};
@@ -56,7 +60,7 @@ async function run() {
 
         })
 
-        app.get('/booking/:id', async (req, res) => {
+        app.get('/booking/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             console.log(id)
             const query = { _id: ObjectId(id) };
@@ -66,19 +70,19 @@ async function run() {
 
 
         app.post('/booking', async (req, res) => {
-            const booking = req.body;
-            const result = await bookingCollection.insertOne(booking);
-            res.send(result);
+            const order = req.body;
+            const result = await bookingCollection.insertOne(order);
+            res.json(result);
         });
         app.get("/bookingP/:email", async (req, res) => {
             console.log(req.params.email);
-            const result = await bookingCollection.find({ email: req.params.email })
+            const result = await bookingCollection.find({ coustomar: req.params.email })
                 .toArray();
             res.json(result);
         });
 
 
-        app.patch('booking/:id', verifyJWT, async (req, res) => {
+        app.patch('/paymentBooking/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const payment = req.body;
             const filter = { _id: ObjectId(id) };
@@ -174,3 +178,4 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log('electric tools running port', port)
 })
+
