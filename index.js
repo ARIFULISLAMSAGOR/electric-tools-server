@@ -93,20 +93,6 @@ async function run() {
             res.send(updatedDoc)
         });
 
-        app.put("/booking/:id", async (req, res) => {
-            const id = req.params.id;
-            console.log(id)
-            const payment = req.body;
-            const filter = { _id: ObjectId(id) };
-            const updateDoc = {
-                $set: {
-                    payment: payment,
-                },
-            };
-            const result = await bookingCollection.updateOne(filter, updateDoc);
-            res.json(result);
-        });
-
 
         app.post("/create-payment-intent", async (req, res) => {
             const paymentInfo = req.body;
@@ -118,6 +104,18 @@ async function run() {
             });
             res.json({ clientSecret: paymentIntent.client_secret });
         });
+
+        app.get('/user', verifyJWT, async (req, res) => {
+            const users = await userCollection.find().toArray();
+            res.send(users);
+        });
+
+        app.get('/admin/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email });
+            const isAdmin = user.role === 'admin';
+            res.send({ admin: isAdmin })
+        })
     }
     finally {
 
