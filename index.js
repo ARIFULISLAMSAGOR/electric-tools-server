@@ -3,6 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { ObjectID } = require('bson');
 const port = process.env.PORT || 5000;
 const app = express();
 const stripe = require('stripe')('sk_test_51L4OOwFE4wv54inCqK8DfIw2xxWOeyvFq78u3x2vbKPCH6ZW9mOKQDdrRqOjfDTCHbSqLhuAamcoOFnin5SgVjzp00IbQkyV9I')
@@ -136,6 +137,19 @@ async function run() {
             else {
                 res.status(403).send({ message: 'forbidden' })
             }
+        });
+
+        app.post("/addService", async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product);
+            res.json(result);
+        });
+
+        app.delete('/booking/:id', verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectID(id) };
+            const result = await productCollection.deleteOne(query);
+            res.send(result);
         })
 
         app.post("/reviews", async (req, res) => {
@@ -151,7 +165,6 @@ async function run() {
             const reviews = await cursor.toArray();
             res.json(reviews);
         });
-
 
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
